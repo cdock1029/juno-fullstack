@@ -1,18 +1,19 @@
+const NODE_ENV = process.env.NODE_ENV
+const isDev = NODE_ENV === 'development'
+const dotenv = require('dotenv')
+
 const webpack = require('webpack')
 const fs = require('fs')
-const path = require('fs')
+const path = require('path')
 const join = path.join
 const resolve = path.resolve
+
+const getConfig = require('hjs-webpack')
 
 const root = resolve(__dirname)
 const src = join(root, 'src')
 const modules = join(root, 'node_modules')
 const dist = join(root, 'dist')
-
-const NODE_ENV = process.env.NODE_ENV
-const isDev = NODE_ENV === 'development'
-
-const getConfig = require('hjs-webpack')
 
 const config = getConfig({
   isDev,
@@ -21,4 +22,56 @@ const config = getConfig({
   clearBeforeBuild: true,
 })
 
-modules.exports = config
+const dotEnvVars = dotenv.config()
+const environmentEnv = dotenv.config({
+  path: join(root, 'config', `${NODE_ENV}.config.js`),
+  silent: true,
+})
+const envVariables = Object.assign({}, dotEnvVars, environmentEnv)
+const defines = Object.keys(envVariables)
+  .reduce((memo, key) => {
+    const val = JSON.stringify(envVariables[key])
+    memo[`__${key.toUpperCase()}__`] = val
+    return memo
+  }, { __NODE_ENV__: JSON.stringify(NODE_ENV) })
+
+config.plugins = [new webpack.DefinePlugin(defines)].concat(config.plugins)
+
+config.postcss = [].concat([
+  require('precss')({}),
+  require('autoprefixer')({}),
+  require('cssnano')({}),
+])
+
+const cssModulesNames = `${isDev ? '[path][name]__[local]__' : ''}[hash:base64:5]`
+
+const matchCssLoaders = /(^|!)(css-loader)($|!)/
+
+const findLoader = (loaders, match) => {
+  const found = loaders.filter(l => l &&
+    l.loader && l.loader.match(match))
+  return found ? found[0] : null
+}
+// existing css loader
+const cssloader = findLoader(config.module.loaders, matchCssLoaders)
+
+const newloader = Object.assign({}, cssloader, {
+  test: /\.module\.css$/,
+  include: [src],
+  loader: cssloader.loader.replace(
+    matchCssLoaders,
+    `$1$2?modules&localIdentName=${cssModulesNames}$3`
+  ),
+})
+
+config.module.loaders.push(newloader)
+cssloader.test = new RegExp(`[^module]${cssloader.test.source}`)
+cssloader.loader = newloader.loader
+
+config.module.loaders.push({
+  test: /\.css$/,
+  include: [modules],
+  loader: 'style!css',
+})
+
+module.exports = config
