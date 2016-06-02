@@ -1,5 +1,6 @@
 const NODE_ENV = process.env.NODE_ENV
 const isDev = NODE_ENV === 'development'
+const isTest = NODE_ENV === 'test'
 const dotenv = require('dotenv')
 
 const webpack = require('webpack')
@@ -21,6 +22,32 @@ const config = getConfig({
   out: dist,
   clearBeforeBuild: true,
 })
+if (isTest) {
+  config.externals = {
+    'react/lib/ReactContext': true,
+    'react/lib/ExecutionEnvironment': true,
+    'react/addons': true,
+  }
+  config.plugins = config.plugins.filter(p => {
+    const name = p.constructor.toString()
+    const fnName = name.match(/^function (.*)\((.*\))/)
+    const idx = [
+      'DedupePlugin',
+      'UglifyJsPlugin',
+    ].indexOf(fnName[1])
+    return idx < 0
+  })
+}
+
+config.resolve.root = [src, modules]
+// in src files, we can refer to [alias]/someFile.js
+// instead of ../../ relative path
+config.resolve.alias = {
+  css: join(src, 'styles'),
+  containers: join(src, 'containers'),
+  components: join(src, 'components'),
+  utils: join(src, 'utils'),
+}
 
 const dotEnvVars = dotenv.config()
 const environmentEnv = dotenv.config({
