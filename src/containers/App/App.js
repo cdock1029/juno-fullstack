@@ -1,20 +1,17 @@
 import React, { PropTypes } from 'react'
 import { Router } from 'react-router'
 
-import 'font-awesome/css/font-awesome.css'
-import styles from './styles.module.css'
+const App = ({ history, routes }) => (
+  <div style={{ height: '100%' }}>
+    <Router
+      history={history}
+      routes={routes} />
+  </div>
+)
 
-const App = React.createClass({
-  render() {
-    return (
-      <div className={styles.wrapper}>
-        <h1>
-          <i className='fa fa-star' />
-          Env: {__NODE_ENV__}
-        </h1>
-      </div>
-    )
-  },
-})
+App.propTypes = {
+  history: PropTypes.object.isRequired,
+  routes: PropTypes.object.isRequired,
+}
 
 export default App
