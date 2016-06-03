@@ -42,30 +42,41 @@ const defines = Object.keys(envVariables)
 
 config.plugins = [new webpack.DefinePlugin(defines)].concat(config.plugins)
 
-const replaceLoader = (match, replacer) => (l) => {
-  if (l && l.loader && l.loader.match(match)) {
-    l.loader = l.loader.replace(match, replacer)
-  }
+// CSS modules
+
+const cssModulesNames = `${isDev ? '[path][name]__[local]__' : ''}[hash:base64:5]`
+
+const matchCssLoaders = /(^|!)(css-loader)($|!)/
+
+const findLoader = (loaders, match) => {
+  const found = loaders.filter(l => l && l.loader && l.loader.match(match))
+  return found ? found[0] : null
 }
+// existing css loader
+const cssloader =
+  findLoader(config.module.loaders, matchCssLoaders)
+// copy to new one with module test and loader
+const newloader = Object.assign({}, cssloader, {
+  test: /\.module\.css$/,
+  include: [src],
+  loader: cssloader.loader.replace(
+    matchCssLoaders,
+    `$1$2?modules&localIdentName=${cssModulesNames}$3`
+  ),
+})
+// add to the list
+config.module.loaders.push(newloader)
+// modify the old one's test to apply to ^module's
+cssloader.test = new RegExp(`[^module]${cssloader.test.source}`)
 
-const cssDevIdent = isDev ? '[path][name]__[local]__' : ''
-const cssModulesLoader = `?modules&localIdentName=${cssDevIdent}[hash:base64:5]`
-const cssModuleMatch = /(^|!)(css-loader)($|!)/
-config.module.loaders.forEach(
-  replaceLoader(
-    cssModuleMatch,
-    `$1$2${cssModulesLoader}$3`
-  )
-)
-
-/* cssloader.test = new RegExp(`[^module]${cssloader.test.source}`)
-cssloader.loader = newloader.loader
-
+// TODO: BELOW is WRONG
+/* cssloader.loader = newloader.loader
 config.module.loaders.push({
   test: /\.css$/,
   include: [modules],
   loader: 'style!css',
 }) */
+// CSS modules
 
 config.postcss = [
   precss({}),
