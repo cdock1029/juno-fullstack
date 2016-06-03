@@ -9,6 +9,10 @@ const path = require('path')
 const join = path.join
 const resolve = path.resolve
 
+const precss = require('precss')
+const autoprefixer = require('autoprefixer')
+const cssnano = require('cssnano')
+
 const getConfig = require('hjs-webpack')
 
 const root = resolve(__dirname)
@@ -22,32 +26,6 @@ const config = getConfig({
   out: dist,
   clearBeforeBuild: true,
 })
-if (isTest) {
-  config.externals = {
-    'react/lib/ReactContext': true,
-    'react/lib/ExecutionEnvironment': true,
-    'react/addons': true,
-  }
-  config.plugins = config.plugins.filter(p => {
-    const name = p.constructor.toString()
-    const fnName = name.match(/^function (.*)\((.*\))/)
-    const idx = [
-      'DedupePlugin',
-      'UglifyJsPlugin',
-    ].indexOf(fnName[1])
-    return idx < 0
-  })
-}
-
-config.resolve.root = [src, modules]
-// in src files, we can refer to [alias]/someFile.js
-// instead of ../../ relative path
-config.resolve.alias = {
-  css: join(src, 'styles'),
-  containers: join(src, 'containers'),
-  components: join(src, 'components'),
-  utils: join(src, 'utils'),
-}
 
 const dotEnvVars = dotenv.config()
 const environmentEnv = dotenv.config({
@@ -64,41 +42,75 @@ const defines = Object.keys(envVariables)
 
 config.plugins = [new webpack.DefinePlugin(defines)].concat(config.plugins)
 
-config.postcss = [].concat([
-  require('precss')({}),
-  require('autoprefixer')({}),
-  require('cssnano')({}),
-])
-
-const cssModulesNames = `${isDev ? '[path][name]__[local]__' : ''}[hash:base64:5]`
-
-const matchCssLoaders = /(^|!)(css-loader)($|!)/
-
-const findLoader = (loaders, match) => {
-  const found = loaders.filter(l => l &&
-    l.loader && l.loader.match(match))
-  return found ? found[0] : null
+const replaceLoader = (match, replacer) => (l) => {
+  if (l && l.loader && l.loader.match(match)) {
+    l.loader = l.loader.replace(match, replacer)
+  }
 }
-// existing css loader
-const cssloader = findLoader(config.module.loaders, matchCssLoaders)
 
-const newloader = Object.assign({}, cssloader, {
-  test: /\.module\.css$/,
-  include: [src],
-  loader: cssloader.loader.replace(
-    matchCssLoaders,
-    `$1$2?modules&localIdentName=${cssModulesNames}$3`
-  ),
-})
+const cssDevIdent = isDev ? '[path][name]__[local]__' : ''
+const cssModulesLoader = `?modules&localIdentName=${cssDevIdent}[hash:base64:5]`
+const cssModuleMatch = /(^|!)(css-loader)($|!)/
+config.module.loaders.forEach(
+  replaceLoader(
+    cssModuleMatch,
+    `$1$2${cssModulesLoader}$3`
+  )
+)
 
-config.module.loaders.push(newloader)
-cssloader.test = new RegExp(`[^module]${cssloader.test.source}`)
+/* cssloader.test = new RegExp(`[^module]${cssloader.test.source}`)
 cssloader.loader = newloader.loader
 
 config.module.loaders.push({
   test: /\.css$/,
   include: [modules],
   loader: 'style!css',
-})
+}) */
+
+config.postcss = [
+  precss({}),
+  autoprefixer({}),
+  cssnano({
+    // Required to work with relative Common JS style urls for css-modules
+    normalizeUrl: false,
+    // Core is on by default so disabling it for dev allows for more readable
+    // css since it retains whitespace and bracket newlines
+    core: !isDev,
+    discardComments: { removeAll: !isDev },
+  }),
+]
+
+config.resolve.root = [src, modules]
+// in src files, we can refer to [alias]/someFile.js
+// instead of ../../ relative path
+config.resolve.alias = {
+  css: join(src, 'styles'),
+  containers: join(src, 'containers'),
+  components: join(src, 'components'),
+  utils: join(src, 'utils'),
+  styles: join(src, 'styles'),
+  routes: join(src, 'routes'),
+  themes: join(modules, 'semantic-ui', 'dist', 'themes'),
+}
+
+if (isTest) {
+  config.externals = {
+    'react/lib/ReactContext': true,
+    'react/lib/ExecutionEnvironment': true,
+    'react/addons': true,
+  }
+  config.module.noParse = /\/sinon\.js/
+  config.resolve.alias.sinon = 'sinon/pkg/sinon'
+
+  config.plugins = config.plugins.filter(p => {
+    const name = p.constructor.toString()
+    const fnName = name.match(/^function (.*)\((.*\))/)
+    const idx = [
+      'DedupePlugin',
+      'UglifyJsPlugin',
+    ].indexOf(fnName[1])
+    return idx < 0
+  })
+}
 
 module.exports = config

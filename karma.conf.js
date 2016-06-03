@@ -44,7 +44,7 @@ module.exports = function karmaConf(config) {
 
     webpack: webpackConfig,
     webpackServer: {
-      noInfo: true,
+      noInfo: false,
     },
 
 

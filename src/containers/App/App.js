@@ -1,16 +1,14 @@
 import React, { PropTypes } from 'react'
-import { Router } from 'react-router'
+import { browserHistory, Router, Redirect } from 'react-router'
 
-const App = ({ history, routes }) => (
-  <div style={{ height: '100%' }}>
-    <Router
-      history={history}
-      routes={routes} />
-  </div>
+const App = ({ routes }) => (
+  <Router history={browserHistory}>
+    {routes}
+    <Redirect from='*' to='/' />
+  </Router>
 )
 
 App.propTypes = {
-  history: PropTypes.object.isRequired,
   routes: PropTypes.object.isRequired,
 }
 

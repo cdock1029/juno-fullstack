@@ -62,6 +62,7 @@
     "font-awesome": "^4.6.3",
     "react": "^15.1.0",
     "react-dom": "^15.1.0",
-    "react-router": "^2.4.1"
+    "react-router": "^2.4.1",
+    "semantic-ui": "Semantic-Org/Semantic-UI#00587e1e523e6d949a831da3252d91993502247d"
   }
 }
