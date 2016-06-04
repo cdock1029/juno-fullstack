@@ -12,6 +12,7 @@ const Root = React.createClass({
     return (
       <div className={'ui container'}>
         <Header />
+        <div>Root</div>
         {children}
       </div>
     )

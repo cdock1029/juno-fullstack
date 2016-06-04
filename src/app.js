@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import App from 'containers/App/App'
 
-require('semantic-ui/dist/semantic.min.css')
+import 'semantic-ui/dist/semantic.min.css'
 import './app.css'
 // import 'font-awesome/css/font-awesome.css'
 
