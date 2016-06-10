@@ -2,9 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import App from 'containers/App/App'
 
-require('semantic-ui/dist/semantic.min.css')
-import './app.css'
+import 'semantic-ui/dist/semantic.css'
 // import 'font-awesome/css/font-awesome.css'
+import './app.css'
 
 import makeRoutes from './routes'
 const routes = makeRoutes()

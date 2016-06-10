@@ -66,16 +66,19 @@ const newloader = Object.assign({}, cssloader, {
 })
 // add to the list
 config.module.loaders.push(newloader)
-// modify the old one's test to apply to ^module's
+// modify the old one's test to apply to ^module's (global css)
 cssloader.test = new RegExp(`[^module]${cssloader.test.source}`)
+// (only within src/.. folders)
+cssloader.include = [src]
 
-// TODO: BELOW is WRONG
-/* cssloader.loader = newloader.loader
+// TODO: BELOW is WRONG ?????
+// cssloader.loader = newloader.loader
+// add this to load third party node_modules css
 config.module.loaders.push({
   test: /\.css$/,
   include: [modules],
   loader: 'style!css',
-}) */
+})
 // CSS modules
 
 config.postcss = [
