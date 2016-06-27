@@ -1,10 +1,11 @@
 const NODE_ENV = process.env.NODE_ENV
+process.env.AWS_SERVICES = 'cognitoidentity,lambda'
 const isDev = NODE_ENV === 'development'
 const isTest = NODE_ENV === 'test'
 const dotenv = require('dotenv')
 
 const webpack = require('webpack')
-const fs = require('fs')
+// const fs = require('fs')
 const path = require('path')
 const join = path.join
 const resolve = path.resolve
@@ -19,14 +20,24 @@ const root = resolve(__dirname)
 const src = join(root, 'src')
 const modules = join(root, 'node_modules')
 const dist = join(root, 'dist')
+const configJson = require('./config.json')
 
 const config = getConfig({
   isDev,
   in: join(src, 'app.js'),
   out: dist,
   clearBeforeBuild: true,
+  html: (context) => ({
+    'index.html': context.defaultTemplate({
+      metaTags: {
+        'google-signin-scope': 'profile email openid',
+        'google-signin-client_id': configJson.google_client_id,
+      },
+      html: '<div id="root"><script src="https://apis.google.com/js/platform.js"></script><script src="aws-sdk-2.3.19.js"></script>',
+    }),
+  }),
 })
-
+// TODO look into how this is used...
 const dotEnvVars = dotenv.config()
 const environmentEnv = dotenv.config({
   path: join(root, 'config', `${NODE_ENV}.config.js`),
@@ -106,6 +117,15 @@ config.resolve.alias = {
   routes: join(src, 'routes'),
   themes: join(modules, 'semantic-ui', 'dist', 'themes'),
 }
+// AWS
+/* config.node = { fs: 'empty' }
+config.module.loaders.push({
+  test: /aws-sdk/,
+  loaders: ['transform?brfs'],
+})
+// TODO: try later to remove error messages config.module.noParse = [/aws-sdk/]
+// TODO: fix so noParse used in one place (isTest -> sinon down below)
+*/
 
 if (isTest) {
   config.externals = {
@@ -113,7 +133,7 @@ if (isTest) {
     'react/lib/ExecutionEnvironment': true,
     'react/addons': true,
   }
-  config.module.noParse = /\/sinon\.js/
+  config.module.noParse = /[/\\]sinon\.js/
   config.resolve.alias.sinon = 'sinon/pkg/sinon'
 
   config.plugins = config.plugins.filter(p => {
