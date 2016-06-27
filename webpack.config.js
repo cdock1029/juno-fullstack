@@ -33,7 +33,7 @@ const config = getConfig({
         'google-signin-scope': 'profile email openid',
         'google-signin-client_id': configJson.google_client_id,
       },
-      html: '<div id="root"><script src="https://apis.google.com/js/platform.js"></script><script src="aws-sdk-2.3.19.js"></script>',
+      html: '<div id="root"><script src="https://apis.google.com/js/platform.js"></script><script src="https://sdk.amazonaws.com/js/aws-sdk-2.4.2.min.js"></script>',
     }),
   }),
 })
