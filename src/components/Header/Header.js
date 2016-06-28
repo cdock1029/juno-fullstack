@@ -1,48 +1,62 @@
 import React from 'react'
 import { Link } from 'react-router'
-// import AWS from 'aws-sdk'
-window.AWS.config.region = 'us-east-1'
-const AWS = window.AWS
+import { connect } from 'react-redux'
+import { loginSuccess, logOut } from 'actions/user'
 
 const Header = React.createClass({
 
   getInitialState() {
-    return { user: null }
+    return {
+      signedIn: false,
+      idToken: '',
+      gId: '',
+      gName: '',
+      gImageUrl: '',
+      gEmail: '',
+    }
   },
 
   componentDidMount() {
-    window.gapi.signin2.render('g-signin2', {
-      scope: 'profile email openid',
-      width: 100,
-      height: 30,
-      // longtitle: true,
-      // theme: 'dark',
-      onsuccess: this.onSignIn,
-      onfailure: this.onSiginFailure,
-    })
+    if (typeof window.gapi !== 'undefined') {
+      window.gapi.signin2.render(this.refs.gSignin2, {
+        scope: 'profile email openid',
+        width: 100,
+        height: 30,
+        // longtitle: true,
+        // theme: 'dark',
+        onsuccess: this.onSignIn,
+        onfailure: this.onSiginFailure,
+      })
+    }
   },
 
   onSignIn(googleUser) {
     console.log('onSignIn')
+    const { dispatch, loginSuccess } = this.props
     const idToken = googleUser.getAuthResponse().id_token
     const profile = googleUser.getBasicProfile()
     const user = {
-      id: profile.getId(),
-      name: profile.getName(),
-      imageUrl: profile.getImageUrl(),
-      email: profile.getEmail(),
+      idToken,
+      gId: profile.getId(),
+      gName: profile.getName(),
+      gImageUrl: profile.getImageUrl(),
+      gEmail: profile.getEmail(),
     }
-    console.log('Signin succes:', user)
-    AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    /* AWS.config.credentials = new AWS.CognitoIdentityCredentials({
       IdentityPoolId: 'us-east-1:fed1f8ad-f90c-49ce-9c05-9535ae3dbe91',
       Logins: {
         'accounts.google.com': idToken,
       },
-    })
-    this.setState({ user })
+    }) */
+    dispatch(loginSuccess({ signedIn: true, ...user }))
   },
 
-  onSignOut(e) {
+  onSignOut() {
+    const { dispatch, logOut } = this.props
+    const auth2 = window.gapi.auth2.getAuthInstance()
+    auth2.signOut().then(() => {
+      dispatch(logOut())
+    })
     console.log('sign out')
   },
 
@@ -50,17 +64,35 @@ const Header = React.createClass({
     console.log('Login failure:', response)
   },
 
+  renderGoogleButton() {
+    return <div className='item' ref='gSignin2' />
+  },
+
+  renderSignOutButton() {
+    if (this.props.user.signedIn) {
+      return <a className='ui item' onClick={this.onSignOut}>Sign Out</a>
+    }
+    return null
+  },
+
+  renderUserItems() {
+    const { gId, gName, gImageUrl, gEmail } = this.props.user
+    return [gName, gEmail].map((item, index) => (
+      <div className='item' key={index}>{item}</div>
+    ))
+  },
+
   render() {
-    console.log('render - user:', this.state.user)
+    console.log('render - props:', this.props)
     return (
       <div className='ui top fixed menu'>
         <div className='ui container'>
           <Link className='item' to='/'><i className='home icon' /></Link>
           <Link className='item' to='/create-property'>New Property</Link>
           <div className='right menu'>
-            {this.user ?
-              <a className='ui item' onClick={this.onSignOut}>Sign Out</a> :
-              <div className='item' onClick={this.onSignOut} id='g-signin2' />}
+            {this.renderUserItems()}
+            {this.renderGoogleButton()}
+            {this.renderSignOutButton()}
           </div>
         </div>
       </div>
@@ -68,4 +100,10 @@ const Header = React.createClass({
   },
 })
 
-export default Header
+const mapStateToProps = ({ user }) => ({
+  user,
+  logOut,
+  loginSuccess,
+})
+
+export default connect(mapStateToProps)(Header)

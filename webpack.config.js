@@ -30,10 +30,15 @@ const config = getConfig({
   html: (context) => ({
     'index.html': context.defaultTemplate({
       metaTags: {
-        'google-signin-scope': 'profile email openid',
+        // 'google-signin-scope': 'profile email openid',
         'google-signin-client_id': configJson.google_client_id,
       },
-      html: '<div id="root"><script src="https://apis.google.com/js/platform.js"></script><script src="https://sdk.amazonaws.com/js/aws-sdk-2.4.2.min.js"></script>',
+      html: `<div id="root"></div><script src="https://apis.google.com/js/platform.js?onload=triggerGoogleLoaded"></script><script type="text/javascript">
+            function triggerGoogleLoaded() {
+              window.dispatchEvent(new Event("google-loaded"));
+            }
+        </script>
+        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.4.2.min.js"></script>`,
     }),
   }),
 })
@@ -116,6 +121,9 @@ config.resolve.alias = {
   styles: join(src, 'styles'),
   routes: join(src, 'routes'),
   themes: join(modules, 'semantic-ui', 'dist', 'themes'),
+  data: join(src, 'data'),
+  actions: join(src, 'data', 'actions'),
+  reducers: join(src, 'data', 'reducers'),
 }
 // AWS
 /* config.node = { fs: 'empty' }
