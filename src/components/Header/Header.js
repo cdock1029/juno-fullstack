@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router'
 import { connect } from 'react-redux'
+import cx from 'classnames'
 import { loginSuccess, logOut } from 'actions/user'
 
 const Header = React.createClass({
@@ -65,21 +66,36 @@ const Header = React.createClass({
   },
 
   renderGoogleButton() {
-    return <div className='item' ref='gSignin2' />
+    const { signedIn } = this.props.user
+    return (
+      <div
+        className={cx({ item: !signedIn, hidden: signedIn })}
+        ref='gSignin2' />
+    )
   },
 
   renderSignOutButton() {
     if (this.props.user.signedIn) {
-      return <a className='ui item' onClick={this.onSignOut}>Sign Out</a>
+      return (
+        <a
+          className='ui item'
+          onClick={this.onSignOut}>
+          <i className='google icon' />
+          Sign Out
+        </a>
+      )
     }
     return null
   },
 
   renderUserItems() {
-    const { gId, gName, gImageUrl, gEmail } = this.props.user
-    return [gName, gEmail].map((item, index) => (
-      <div className='item' key={index}>{item}</div>
-    ))
+    const { gName, gEmail, gImageUrl, signedIn } = this.props.user
+    return signedIn ? (
+      <div className='item'>
+        <img className='ui avatar image' src={gImageUrl} alt={gName} />
+        <span>{gName}</span>
+      </div>
+    ) : null
   },
 
   render() {

@@ -34,9 +34,8 @@ export function loginFail(error) {
 }
 
 export function logOut() {
-  if (window.AWS.config.credentials) {
-    window.AWS.config.credentials.clearCachedId()
-  }
+  AWS.config.credentials.clearCachedId()
+  AWS.config.credentials = null
   return { type: LOGOUT }
 }
 

@@ -1,5 +1,5 @@
 const NODE_ENV = process.env.NODE_ENV
-process.env.AWS_SERVICES = 'cognitoidentity,lambda'
+// process.env.AWS_SERVICES = 'cognitoidentity,lambda'
 const isDev = NODE_ENV === 'development'
 const isTest = NODE_ENV === 'test'
 const dotenv = require('dotenv')
