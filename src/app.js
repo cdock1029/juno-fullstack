@@ -9,24 +9,18 @@ import './app.css'
 
 import configureStore from 'data/store'
 import makeRoutes from 'routes'
-import loginSuccess from 'actions/user'
+import { loadingStart } from 'actions/app'
 
 /* TODO: HACK to fix react-google-login - is looking for script tag */
-const s = document.createElement('script')
-const body = document.getElementsByTagName('body')[0]
-body.appendChild(s)
+// const s = document.createElement('script')
+// const body = document.getElementsByTagName('body')[0]
+// body.appendChild(s)
 
 const store = configureStore()
-const token = localStorage.getItem('token')
-const data = {
-  success: true,
-  message: null,
-  token,
-}
-
-if (token) {
-  store.dispatch(loginSuccess(data))
-}
+window.addEventListener('google-loaded', () => {
+  console.log('google-loaded..')
+  // store.dispatch(loadingStart())
+})
 
 ReactDOM.render(
   <App routes={makeRoutes()} store={store} />,

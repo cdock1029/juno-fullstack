@@ -14,13 +14,14 @@ const INITIAL_STATE = {
 
 function user(state = INITIAL_STATE, action) {
   switch (action.type) {
-    case LOGIN_SUCCESS:
+    case LOGIN_SUCCESS: {
       return {
         ...state,
         ...action.payload,
       }
+    }
     case LOGIN_FAIL:
-      return state
+      return INITIAL_STATE
     case LOGOUT:
       return INITIAL_STATE
     default:

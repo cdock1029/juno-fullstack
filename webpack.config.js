@@ -33,12 +33,23 @@ const config = getConfig({
         // 'google-signin-scope': 'profile email openid',
         'google-signin-client_id': configJson.google_client_id,
       },
-      html: `<div id="root"></div><script src="https://apis.google.com/js/platform.js?onload=triggerGoogleLoaded"></script><script type="text/javascript">
+      html: `<div id="root"></div><script type="text/javascript">
             function triggerGoogleLoaded() {
               window.dispatchEvent(new Event("google-loaded"));
             }
-        </script>
-        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.4.2.min.js"></script>`,
+        </script><script src="https://apis.google.com/js/platform.js?onload=triggerGoogleLoaded"></script>
+        <script src="https://sdk.amazonaws.com/js/aws-sdk-2.4.2.min.js"></script>
+        <script type="text/javascript" src="lib/axios/dist/axios.standalone.js"></script>
+<script type="text/javascript" src="lib/CryptoJS/rollups/hmac-sha256.js"></script>
+<script type="text/javascript" src="lib/CryptoJS/rollups/sha256.js"></script>
+<script type="text/javascript" src="lib/CryptoJS/components/hmac.js"></script>
+<script type="text/javascript" src="lib/CryptoJS/components/enc-base64.js"></script>
+<script type="text/javascript" src="lib/url-template/url-template.js"></script>
+<script type="text/javascript" src="lib/apiGatewayCore/sigV4Client.js"></script>
+<script type="text/javascript" src="lib/apiGatewayCore/apiGatewayClient.js"></script>
+<script type="text/javascript" src="lib/apiGatewayCore/simpleHttpClient.js"></script>
+<script type="text/javascript" src="lib/apiGatewayCore/utils.js"></script>
+<script type="text/javascript" src="apigClient.js"></script>`,
     }),
   }),
 })

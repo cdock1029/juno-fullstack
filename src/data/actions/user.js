@@ -1,7 +1,9 @@
+import { loadingStart, loadingStop } from './app'
+
+
 /*
  * action types
  */
-export const LOGIN_START = 'LOGIN_START'
 export const LOGIN_SUCCESS = 'LOGIN_SUCCESS'
 export const LOGIN_FAIL = 'LOGIN_FAIL'
 export const LOGOUT = 'LOGOUT'
@@ -16,21 +18,23 @@ function setUpAWSIdentity(idToken) {
   })
 }
 
-function loginStart() {
-  return { type: LOGIN_START }
-}
-
 /*
  * action creators
  */
 export function loginSuccess(googleUser) {
-  console.log('loginSuccess: configuring AWS credentials')
-  AWS.config.credentials = setUpAWSIdentity(googleUser.idToken)
-  return { type: LOGIN_SUCCESS, payload: googleUser }
+  return dispatch => {
+    console.log('loginSuccess: configuring AWS credentials')
+    AWS.config.credentials = setUpAWSIdentity(googleUser.idToken)
+    dispatch(loadingStop())
+    return dispatch({ type: LOGIN_SUCCESS, payload: googleUser })
+  }
 }
 
 export function loginFail(error) {
-  return { type: LOGIN_FAIL, payload: error }
+  return dispatch => {
+    dispatch(loadingStop())
+    return { type: LOGIN_FAIL, payload: error }
+  }
 }
 
 export function logOut() {
@@ -40,9 +44,10 @@ export function logOut() {
 }
 
 
+// TODO is this needed?
 export function login() {
   return dispatch => {
-    dispatch(loginStart)
+    dispatch(loadingStart())
     window.Digits.logIn()
       .done(loginSuccess)
       .fail(loginFail)

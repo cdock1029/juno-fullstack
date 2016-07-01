@@ -2,7 +2,7 @@ import React from 'react'
 import { Link } from 'react-router'
 import { connect } from 'react-redux'
 import cx from 'classnames'
-import { loginSuccess, logOut } from 'actions/user'
+import { loginSuccess, logOut, loginFail } from 'actions/user'
 
 const Header = React.createClass({
 
@@ -26,7 +26,7 @@ const Header = React.createClass({
         // longtitle: true,
         // theme: 'dark',
         onsuccess: this.onSignIn,
-        onfailure: this.onSiginFailure,
+        onfailure: this.onSignInFailure,
       })
     }
   },
@@ -43,12 +43,6 @@ const Header = React.createClass({
       gImageUrl: profile.getImageUrl(),
       gEmail: profile.getEmail(),
     }
-    /* AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-      IdentityPoolId: 'us-east-1:fed1f8ad-f90c-49ce-9c05-9535ae3dbe91',
-      Logins: {
-        'accounts.google.com': idToken,
-      },
-    }) */
     dispatch(loginSuccess({ signedIn: true, ...user }))
   },
 
@@ -61,8 +55,10 @@ const Header = React.createClass({
     console.log('sign out')
   },
 
-  onSiginFailure(response) {
+  onSignInFailure(response) {
+    const { dispatch } = this.props
     console.log('Login failure:', response)
+    dispatch(loginFail(response))
   },
 
   renderGoogleButton() {
