@@ -20,19 +20,20 @@ const root = resolve(__dirname)
 const src = join(root, 'src')
 const modules = join(root, 'node_modules')
 const dist = join(root, 'dist')
-const configJson = require('./config.json')
+// const configJson = require('./config.json')
 
 const config = getConfig({
   isDev,
   in: join(src, 'app.js'),
   out: dist,
-  clearBeforeBuild: true,
-  html: (context) => ({
+  clearBeforeBuild: false,
+  html: false, /* (context) => ({
     'index.html': context.defaultTemplate({
       metaTags: {
         // 'google-signin-scope': 'profile email openid',
         'google-signin-client_id': configJson.google_client_id,
       },
+      head: '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/semantic.css" />',
       html: `<div id="root"></div><script type="text/javascript">
             function triggerGoogleLoaded() {
               window.dispatchEvent(new Event("google-loaded"));
@@ -51,7 +52,7 @@ const config = getConfig({
 <script type="text/javascript" src="lib/apiGatewayCore/utils.js"></script>
 <script type="text/javascript" src="apigClient.js"></script>`,
     }),
-  }),
+  }), */
 })
 // TODO look into how this is used...
 const dotEnvVars = dotenv.config()

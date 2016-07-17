@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { connect } from 'react-redux'
 import cx from 'classnames'
 import { loginSuccess, logOut, loginFail } from 'actions/user'
+import QBOButton from 'components/QBOButton/QBOButton'
 
 const Header = React.createClass({
 
@@ -105,6 +106,7 @@ const Header = React.createClass({
             {this.renderUserItems()}
             {this.renderGoogleButton()}
             {this.renderSignOutButton()}
+            <QBOButton />
           </div>
         </div>
       </div>
