@@ -13,7 +13,11 @@ const QBOButton = React.createClass({
     this.insertScript(`window.addEventListener('intuit-loaded', function() {
       console.log('on intuit-loaded event');
       intuit.ipp.anywhere.setup({
-        grantUrl: 'https://api.ulo.io/latest/requestToken'
+        grantUrl: 'https://7c6zaeerdd.execute-api.us-east-1.amazonaws.com/latest/requestToken',
+        datasources: {
+                 quickbooks : true,
+                 payments : false 
+           }
       });
     })`)
   },

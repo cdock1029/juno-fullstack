@@ -29,7 +29,7 @@ const Dashboard = React.createClass({
     )
   },
 
-  onApiGatewayClick() {
+  loadApiClient() {
     let apigClient
     if (AWS.config.credentials) {
       const {
@@ -37,56 +37,55 @@ const Dashboard = React.createClass({
         secretAccessKey,
         sessionToken,
       } = AWS.config.credentials
-      console.log(`accessKeyId=${accessKeyId}, secretKey=${secretAccessKey}`)
       apigClient = window.apigClientFactory.newClient({
         accessKey: accessKeyId,
         secretKey: secretAccessKey,
         sessionToken,
       })
     } else { apigClient = window.apigClientFactory.newClient() }
+    return apigClient
+  },
+
+  data(data) {
+    this.setState({ data, error: '' })
+  },
+
+  error(err) {
+    this.setState({ data: null, error: JSON.stringify(err, null, 2) })
+  },
+
+  onApiGatewayClick() {
+    const apigClient = this.loadApiClient()
     const modeledParams = null // required params (none here)
     const body = null // body for post requests
     const additionalParams = { queryParams: { q1: 'foo', q2: 'bar' } }
     apigClient.triggerGet(modeledParams, body, additionalParams)
-      .then(data => {
-        this.setState({ data, error: '' })
-      }).catch(error => {
-        this.setState({ data: null, error: JSON.stringify(error, null, 2) })
-      })
+      .then(this.data)
+      .catch(this.error)
   },
 
   onRequestTokenClick() {
+    const apigClient = this.loadApiClient()
     const modeledParams = null // required params (none here)
     const body = null // body for post requests
     const additionalParams = { queryParams: { q1: 'quickbooks', q2: 'sucks' } }
-    const {
-      accessKeyId,
-      secretAccessKey,
-      sessionToken,
-    } = AWS.config.credentials
-    const apigClient = window.apigClientFactory.newClient({
-      accessKey: accessKeyId,
-      secretKey: secretAccessKey,
-      sessionToken,
-    })
     apigClient.requestTokenGet(modeledParams, body, additionalParams)
-      .then(data => {
-        this.setState({ data, error: '' })
-      }).catch(error => {
-        this.setState({ data: null, error: JSON.stringify(error, null, 2) })
-      })
+      .then(this.data)
+      .catch(this.error)
   },
 
   onClickRedirect() {
     console.log('clicked redirect')
-    fetch('https://7c6zaeerdd.execute-api.us-east-1.amazonaws.com/latest/redirect')
-      .then(resp => resp.json())
-      .then(data => {
-        this.setState({ data, error: '' })
-      })
-      .catch(error => {
-        this.setState({ data: null, error: JSON.stringify(error, null, 2) })
-      })
+    const apigClient = this.loadApiClient()
+    apigClient.redirectGet()
+      .then(this.data)
+      .catch(this.error)
+  },
+  onClickTest() {
+    const apigClient = this.loadApiClient()
+    apigClient.testGet()
+      .then(this.data)
+      .catch(this.error)
   },
 
   render() {
@@ -114,6 +113,9 @@ const Dashboard = React.createClass({
         </button>
         <button className='ui yellow button' onClick={this.onClickRedirect}>
           Redirect Test
+        </button>
+        <button className='ui pink button' onClick={this.onClickTest}>
+          Test
         </button>
         <button
           className='ui green button'

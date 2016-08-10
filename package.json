@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "NODE_ENV=development hjs-dev-server",
+    "build": "NODE_ENV=production webpack",
     "backend-clean": "cd backend && rm -rf build || true",
     "backend-create": "npm run backend-transpile && cd backend && claudia create --name claudia-lambda --region us-east-1 --handler backend.handler",
     "backend-deploy": "npm run backend-transpile && cd backend && claudia update",
